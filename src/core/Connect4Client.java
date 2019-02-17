@@ -4,6 +4,9 @@ package core;
 import java.io.*;
 import java.net.Socket;
 
+import static core.Constants.NUMCOLUMNS;
+import static core.Constants.NUMROWS;
+
 /**
  * Connect4Client is what all clients use to connect to the Connect4 Server.
  * This class creates ObjectInput and ObjectOutput streams for the clients to
@@ -70,12 +73,12 @@ public class Connect4Client {
      * @throws IOException in the event of socket failure
      */
     public GameBoard getGameBoard() throws IOException {
-        try{
+        try {
             return (GameBoard) fromServer.readObject();
-        } catch(ClassNotFoundException ex){
-            System.out.println("Couldn't convert to a gameboard!");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Could not translate gameboard from server");
         }
-        return new GameBoard(6, 7);
+        return new GameBoard(NUMROWS, NUMCOLUMNS);
     }
 
     public void close() throws IOException {

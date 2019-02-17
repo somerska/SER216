@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import static org.junit.Assert.*;
 
@@ -20,6 +21,7 @@ public class Connect4ServerConnect4ClientTest {
 
     @Before
     public void setUpServer() throws Exception {
+
         serverThread = new Thread(() -> {
             server = new Connect4Server();
             ServerSocket serverSocket = server.getServerSocket();
@@ -155,5 +157,15 @@ public class Connect4ServerConnect4ClientTest {
         c2.close();
         assertEquals(finalStatus, Constants.PLAYER1_WON);
     }
+    @Test
+    public void ServerHandlesPlayVsCompWithoutExceptionThrown() throws Exception {
+        c1 = new Connect4Client(); //player 0
+        c1.sendGameType(Constants.PLAYERVSCOMP);
+        c1.getGameStatus(); //players number
+        c1.getGameStatus(); //continue
 
+        c1.getGameBoard();
+        c1.sendMove(0);
+        c1.close();
+    }
 }

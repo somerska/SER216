@@ -15,32 +15,30 @@ import java.util.Scanner;
  */
 public class Connect4 {
     public static void main(String[] args) {
-        if(isGUI()){
-            Connect4GUI.main(args);
+        String input = "";
+        if(args.length == 0){
+            System.out.println("Note that you must have the server launched first!");
+            System.out.println("Do you wish Console 'C' or GUI 'G' version of the game?");
+            Scanner scanner = new Scanner(System.in);
+            input = scanner.nextLine();
         } else {
-            Connect4TextConsole.main(args);
+            input = args[1];
         }
+        if(isGUI(input))
+            Connect4GUI.main(args);
+        Connect4TextConsole.main(args);
     }
     /**
      * Simple text-interface to ask the user if they want a GUI or text version of the game.
      * @return returns true if they provide valid input and do want a GUI version of the game.
      */
-    private static boolean isGUI(){
-        System.out.println("Note that you must have the server launched first!");
-        System.out.println("Do you wish to play a console (text) or GUI version " +
-                "of the game? 'G' for GUI or 'C' for console");
-        Scanner scanner = new Scanner(System.in);
-        String input = "";
-        try{
-            input = scanner.nextLine();
-        } catch (InputMismatchException ex){
-            System.out.println("Invalid input, defaulting to console version");
-            return false;
-        }
+    public static boolean isGUI(String input){
         if(input.equalsIgnoreCase("G")){
+            System.out.println("Setting up GUI version");
             return true;
         }
         else if(input.equalsIgnoreCase("C")){
+            System.out.println("Setting up console version");
             return false;
         }
         else {

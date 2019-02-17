@@ -43,7 +43,6 @@ public class Connect4ComputerPlayer extends Player{
             if (randomNum >= 0
                     && (randomNum <= gameBoard.getColLength() - 1)
                     && !gameBoard.colIsFull(randomNum))
-                return randomNum;
-        }
+                return randomNum; }
     }
 }
