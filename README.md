@@ -22,18 +22,25 @@ To test this project you'll need Java 8.
 Open 3 terminals or cmd.exe and navigate to out/production/SER216
 
 In terminal 1 Launch the server:
-java core/Connect4Server
+
+java core/Connect4Server <enter>
 
 In terminal 2 launch the first game client, 
 follow the prompt for UI version and Opponent type (computer or player):
-java core/Connect4
-C
-P
+
+java core/Connect4 <enter>
+ 
+C <enter>
+
+P <enter>
 
 In terminal 3 launch the second game client,
 follow the prompt for UI version and Opponent type (computer or player):
-java core/Connect4
-C
-P
 
-Play Connect4.
+java core/Connect4 <enter>
+
+C <enter>
+
+P <enter>
+
+Play Connect 4, enjoy :)
