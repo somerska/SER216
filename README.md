@@ -1,4 +1,7 @@
 This was a school project I completed in Spring 2019.
+This project is a java8 implementation of a classic game, Connect 4.
+In case you're not aware of the game play please review https://en.wikipedia.org/wiki/Connect_Four
+
 
 This project has some flaws in both design and implementation but it works.
 If I had more time some areas I would focus on are:
@@ -10,6 +13,9 @@ long and could easily be refactored to remove duplicate code.
 * naming could be better in some classes
 
 And I'm sure there are a few other things I could improve if I had the time.
+
+INSTRUCTIONS TO PLAY:
+-----
 
 To test this project you'll need Java 8.
 
