@@ -43,6 +43,7 @@ public class GameManager {
      * set which player's turn it is
      * @param playerID the id of the player to set as having the current turn
      * @throws IndexOutOfBoundsException if an invalid id is supplied ex is thrown
+     * @return returns the new players turn (an id)
      */
     public int setPlayerTurn(int playerID) throws IndexOutOfBoundsException{
         if (playerID < 0 || playerID >= this.players.size())

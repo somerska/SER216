@@ -31,8 +31,6 @@ public class Connect4ServerConnect4ClientTest {
     }
 
 
-
-
     @After
     public void tearDown() throws Exception {
         Thread.sleep(500);
@@ -42,8 +40,6 @@ public class Connect4ServerConnect4ClientTest {
         c2 = null;
         server = null;
     }
-
-
 
     @Test
     public void ClientCanConnectHasNoExceptions() throws Exception {

@@ -48,7 +48,7 @@ public class Connect4Server {
     }
 
     /**
-     * Represents a players collective in & out object streams.
+     * Represents a players collective in and out object streams.
      */
     public static class Streams{
         public ObjectOutputStream out;
@@ -89,6 +89,10 @@ public class Connect4Server {
         }
         close();
     }
+
+    /**
+     * stop main server thread, stop all threads dedicated to handling a session.
+     */
     public void close(){
         continueRunning = false;
         if (serverSocket != null) {
@@ -107,7 +111,7 @@ public class Connect4Server {
 
     /**
      * If a player connects and requests player vs computer, this method will start a new thread
-     * for them to play.  Method will not return until it has a player connect and that player
+     * for them to play immediately.  Method will not return until it has a player connect and that player
      * requests Player vs player.
      * @param playerNumber the player number that is connecting
      * @return Streams obj which is a container for in/out streams of the player
@@ -126,6 +130,7 @@ public class Connect4Server {
                     + sessionNo + '\n' + "Player " + playerNumber + "'s IP address " +
                     player0.getInetAddress().getHostAddress());
 
+            //setup object streams for tcp communication
             ObjectOutputStream out = new ObjectOutputStream(player0.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(player0.getInputStream());
             playerStreams.setInStream(in);
@@ -231,7 +236,7 @@ public class Connect4Server {
                     }
                     gameBoard.decrementSpot();
                     player0Stream.out.flush();
-                    player0Stream.out.reset();
+                    player0Stream.out.reset(); //very important for ensuring the GameBoard is not cached.
 
                     //check for a winner of the current player
                     if(scoreChecker.gameHasWinner(gameBoard, row, column)){
@@ -303,6 +308,8 @@ public class Connect4Server {
          * @param player0 the socket connections for the first player
          * @param player1 the socket connections for the second player
          * @param isWinner if this is false then announce a tie
+         * @throws IOException if player disconnects
+         * @throws NullPointerException if player disconnects
          */
         public void handleWinnerOrTie(Player currentPlayer, Streams player0, Streams player1, boolean isWinner)
                 throws IOException, NullPointerException {

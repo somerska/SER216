@@ -207,6 +207,9 @@ public class Connect4TextConsole {
      * prompt player for their column of choice, validate their input and return the int value
      * representing their column of choice.  This method catches and throws invalid input and also
      * handles player vs player or computer vs player prompting.
+     * @param id the players id that is being prompted
+     * @throws InputMismatchException
+     * @return the players column choice
      */
     public int promptPlayer(int id)
             throws InputMismatchException{

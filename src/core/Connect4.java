@@ -22,7 +22,7 @@ public class Connect4 {
             Scanner scanner = new Scanner(System.in);
             input = scanner.nextLine();
         } else {
-            input = args[1];
+            input = args[0];
         }
         if(isGUI(input))
             Connect4GUI.main(args);
@@ -30,6 +30,7 @@ public class Connect4 {
     }
     /**
      * Simple text-interface to ask the user if they want a GUI or text version of the game.
+     * @param input String input that's being checked for game determination
      * @return returns true if they provide valid input and do want a GUI version of the game.
      */
     public static boolean isGUI(String input){

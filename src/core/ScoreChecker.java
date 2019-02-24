@@ -10,6 +10,7 @@ public class ScoreChecker {
 
     /**
      * uses ScoreChecker and checks for all kinds of winning scenarios (horizontal, vertical or diagonal)
+     * @param gameBoard the gameboard being checked
      * @param row the row of interest to be checked
      * @param col the column of interest to be checked
      * @return boolean indicating whether or not there is a winner
@@ -22,6 +23,7 @@ public class ScoreChecker {
 
     /**
      * checks for a vertical winner, this method is just a wrapper around navigateAndCount.
+     * @param gameBoard the gameboard being checked
      * @param row the row of interest to be checked
      * @param col the column of interest to be checked
      * @return boolean indicating whether or not there is a vertical winner
@@ -34,6 +36,7 @@ public class ScoreChecker {
 
     /**
      * checks for a horizontal winner, this method is just a wrapper around navigateAndCount.
+     * @param gameBoard the gameboard being checked
      * @param row the row of interest to be checked
      * @param col the column of interest to be checked
      * @return boolean indicating whether or not there is a horizontal winner
@@ -46,6 +49,7 @@ public class ScoreChecker {
 
     /**
      * checks for a diagonal winner, this method is just a wrapper around navigateAndCount.
+     * @param gameBoard the gameboard being checked
      * @param row the row of interest to be checked
      * @param col the column of interest to be checked
      * @return boolean indicating whether or not there is a diagonal winner
@@ -61,12 +65,12 @@ public class ScoreChecker {
      * checking horizontally, this method will start at the col,row and navigate right counting consecutive
      * pieces, then navigate left.  The total of navigating in both directions is returned.  This method can handle
      * checking for horizontal, vertical and diagonal winners.
+     * @param gameBoard the gameboard that is being checked
      * @param row the row of interest to be checked
      * @param col the column of interest to be checked
      * @param direction the direction that's being checked: horizontal, vertical, diagonal
      * @return the total number of consecutive slots for the given player and given direction
      */
-
     public int navigateAndCount(GameBoard gameBoard, int row, int col, String direction){
         int slotOfInterest = gameBoard.getPos(row, col);
         int counterInOneDirection = 0;
@@ -119,6 +123,7 @@ public class ScoreChecker {
 
     /**
      * calculates the number of consecutive diagonals in the increasing direction there are.
+     * @param gameBoard the gameboard being checked
      * @param row integer row thats in use
      * @param col integer column thats in use
      * @param slotOfInterest the slot being checked, this is the slot that was just put down.
@@ -150,6 +155,7 @@ public class ScoreChecker {
     }
     /**
      * calculates the number of consecutive diagonals in the decreasing direction there are.
+     * @param gameBoard the gameboard being checked
      * @param row integer row thats in use
      * @param col integer column thats in use
      * @param slotOfInterest the slot being checked, this is the slot that was just put down.
