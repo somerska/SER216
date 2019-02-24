@@ -51,7 +51,7 @@ public class GameBoard implements Serializable {
      */
     public int putPiece(int col, int playerID){
         int row = -1;
-        if (colIsFull(col))
+        if (colIsFull(col) || isOutOfBounds(col))
             return row;
         for(int i = this.rowLength - 1; i >= 0; i--){
             if (slotIsTaken(i, col))
