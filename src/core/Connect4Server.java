@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static core.Constants.*;
 
@@ -16,9 +18,13 @@ import static core.Constants.*;
 public class Connect4Server {
 
     private ServerSocket serverSocket = null;
-    private int sessionNo = 1; // Number a session
+    private AtomicInteger sessionNo = new AtomicInteger(1);
     private ArrayList<Thread> connectedThreads;
     private boolean continueRunning;
+    private ConcurrentLinkedQueue<Streams> pvpSocketStreamsQ;
+    private ConcurrentLinkedQueue<Streams> pvcSocketStreamsQ;
+    private Thread pvpSockThread;
+    private Thread pvcSockThread;
 
 
     /**
@@ -34,6 +40,9 @@ public class Connect4Server {
     public Connect4Server(){
         connectedThreads = new ArrayList<>();
         continueRunning = true;
+        pvpSocketStreamsQ = new ConcurrentLinkedQueue<>();
+        pvcSocketStreamsQ = new ConcurrentLinkedQueue<>();
+
         // Create a server socket
         try {
             serverSocket = new ServerSocket(Constants.PORT);
@@ -63,98 +72,118 @@ public class Connect4Server {
 
     /**
      * handles all incoming connections.
-     * When a connection comes in it will launch a new thread for the game session.
+     * When a player connects a new thread to service the socket is created and launched.
      * @param server the ServerSocket to use for accepting connections
      */
     public void start(ServerSocket server) {
+        //start threads to check the pvpSocketStreamsQ and pvcSocketStreamsQ
+        pvpSockThread = new Thread(new PlayerMatchMaker(pvpSocketStreamsQ, true));
+        pvcSockThread = new Thread(new PlayerMatchMaker(pvcSocketStreamsQ, false));
+        connectedThreads.add(pvpSockThread);
+        connectedThreads.add(pvcSockThread);
+        pvpSockThread.start();
+        pvcSockThread.start();
+        //main loop
         while (continueRunning){
             if (server == null)
                 break;
-            // Ready to create a session for every two players
-
-            System.out.println((new Date() + ": Wait for players to join session " + sessionNo));
             try {
-                Streams player0PvP = loopUntilPvP(server, 1);
-                Streams player1PvP = loopUntilPvP(server, 2);
-                // Display this session and increment session number
-                System.out.println(new Date() + ": Starting a thread for session " + sessionNo++);
-
-                // Launch a new thread for this session of two human players
-                Thread thread = new Thread(new HandleASession(player0PvP, player1PvP, true));
+                Socket player = server.accept();
+                System.out.println(new Date() + ":player connected");
+                Thread thread = new Thread(new SocketServicer(player));
                 connectedThreads.add(thread);
                 thread.start();
             } catch(IOException | NullPointerException ex){
                 System.out.println("Player has disconnected in match making");
             }
         }
+        //safely close all resources
         close();
     }
 
+    /**
+     * Uses the accepted socket, determines the players game type and puts them
+     * in the appropriate queue (based on game type selection)
+     */
+    public class SocketServicer implements Runnable {
+        Socket playerSock;
+        SocketServicer(Socket playerSock) {
+            this.playerSock = playerSock;
+        }
+        public void run(){
+            try{
+                Streams playerStreams = new Streams();
+                //setup object streams for tcp communication
+                ObjectOutputStream out = new ObjectOutputStream(playerSock.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(playerSock.getInputStream());
+                playerStreams.setInStream(in);
+                playerStreams.setOutStream(out);
+
+                while(true) {
+                    Character gameType = in.readChar();
+                    if (gameType == PLAYERVSCOMP) {
+                        pvcSocketStreamsQ.add(playerStreams);
+                        break;
+                    } else if (gameType == PLAYERVSPLAYER) {
+                        pvpSocketStreamsQ.add(playerStreams);
+                        break;
+                    } else { //user did not provide 'P' or 'C'
+                        out.writeChar(BADINPUT);
+                        out.flush();
+                    }
+                }
+            } catch(IOException ex){
+                System.out.println("player disconnected in matchmaking: trying to get game type");
+            }
+        }
+    }
+    /**
+     * Pulls streams from the queue passed in and creates a new session
+     * allowing gameplay to begin.
+     */
+    public class PlayerMatchMaker implements Runnable{
+        private ConcurrentLinkedQueue<Streams> streamsQ;
+        private boolean isPVP;
+        PlayerMatchMaker(ConcurrentLinkedQueue<Streams> streamsQ, boolean isPVP){
+            this.streamsQ = streamsQ;
+            this.isPVP = isPVP;
+        }
+        public void run(){
+            while(true){
+                Streams player1 = null;
+                Streams player2 = null;
+                while(player1 == null){
+                    player1 = streamsQ.poll();
+                }
+                if(isPVP){
+                    while(player2 == null){
+                        player2 = streamsQ.poll();
+                    }
+                } else { //pvc, so just generate an empty stream
+                    player2 = new Streams();
+                }
+                String gameType = (isPVP) ? " player vs player " : " player vs computer ";
+                System.out.println((new Date() + ":launching" + gameType + "session "
+                        + sessionNo.getAndIncrement()));
+                Thread thread = new Thread(new HandleASession(player1, player2, isPVP));
+                connectedThreads.add(thread);
+                thread.start();
+            }
+        }
+    }
     /**
      * stop main server thread, stop all threads dedicated to handling a session.
      */
     public void close(){
         continueRunning = false;
-        if (serverSocket != null) {
-            try {
-                serverSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            serverSocket.close();
+        } catch (IOException | NullPointerException ignored) {
         }
         for(Thread thread: connectedThreads){
-            if (thread != null)
-                thread = null;
+            thread = null;
         }
         serverSocket = null;
-    }
-
-    /**
-     * If a player connects and requests player vs computer, this method will start a new thread
-     * for them to play immediately.  Method will not return until it has a player connect and that player
-     * requests Player vs player.
-     * @param playerNumber the player number that is connecting
-     * @return Streams obj which is a container for in/out streams of the player
-     */
-    private Streams loopUntilPvP(ServerSocket server, int playerNumber)
-            throws IOException, NullPointerException{
-
-        boolean hasPlayerVsPlayer = false;
-        Streams playerStreams = new Streams();
-
-        //continue to loop until two players that are interested in player vs player have connected
-        while(!hasPlayerVsPlayer && server != null){
-            Socket player0 = server.accept();
-
-            System.out.println(new Date() + ": Player " + playerNumber + "  joined session "
-                    + sessionNo + '\n' + "Player " + playerNumber + "'s IP address " +
-                    player0.getInetAddress().getHostAddress());
-
-            //setup object streams for tcp communication
-            ObjectOutputStream out = new ObjectOutputStream(player0.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(player0.getInputStream());
-            playerStreams.setInStream(in);
-            playerStreams.setOutStream(out);
-
-            //get gameType from player
-            Character gameType = in.readChar();
-            if (gameType == PLAYERVSCOMP){
-                System.out.println(new Date() + ": Player " + playerNumber +  "  requested Player vs Computer");
-                System.out.println(new Date() + ": Starting a thread for session " + sessionNo++);
-                //start game with player vs computer immediately
-                Thread thread = new Thread(new HandleASession(playerStreams, new Streams(), false));
-                connectedThreads.add(thread);
-                thread.start();
-                //new Thread(new HandleASession(playerStreams, new Streams(), false)).start();
-            } else if (gameType == PLAYERVSPLAYER) {
-                System.out.println(new Date() + ": Player " + playerNumber + " requested Player vs Player");
-                break;
-            } else{ //user did not provide 'P' or 'C'
-                out.writeChar(BADINPUT);
-                out.flush();
-            }
-        }
-        return playerStreams;
     }
 
     /**
@@ -193,6 +222,7 @@ public class Connect4Server {
 
         /**
          * Handles the coordination and game logic for the two connected players.
+         * Player1 is always human, player 2 is human or computer.
          */
         @SuppressWarnings("Duplicates")
         public void run() {
@@ -299,7 +329,6 @@ public class Connect4Server {
                 System.out.println("player disconnected while match was in progress");
             }
         }
-
 
         /**
          * For a winner or tie situation this method will write out who the winner was (or announce both players
