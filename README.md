@@ -6,11 +6,12 @@ In case you're not aware of the game play please review https://en.wikipedia.org
 This project has some flaws in both design and implementation but it works.
 If I had more time some areas I would focus on are:
 * the inheritence structure between Player and Connect4ComputerPlayer is poor.
-I would instead implement an interface (or possibly an abstract class) IPlayer
-that Connect4ComputerPlayer and Player inherit from.  
+I would instead implement an interface that Connect4ComputerPlayer and Player implement, because they have the same behavior.  
 * the server code is poor quality, in particular the run method of HandleASession is far too
 long and could easily be refactored to remove duplicate code.
 * naming could be better in some classes
+* aplogies for the unecessary commenting in some areas, this was a requirement for the class (comment every method even getters and setters)
+
 
 And I'm sure there are a few other things I could improve if I had the time.
 
