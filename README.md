@@ -1,9 +1,7 @@
-This was a school project I completed in Spring 2019.
-This project is a java8 implementation of a classic game, Connect 4.
+This school project is a java8 implementation of a classic game, Connect 4.
 In case you're not aware of the game play please review https://en.wikipedia.org/wiki/Connect_Four
 
 
-This project has some flaws in both design and implementation but it works.
 If I had more time some areas I would focus on are:
 * the inheritence structure between Player and Connect4ComputerPlayer is poor.
 I would instead implement an interface that Connect4ComputerPlayer and Player implement, because they have the same behavior.  
